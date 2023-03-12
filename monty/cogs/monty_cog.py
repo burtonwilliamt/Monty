@@ -1,4 +1,7 @@
+import json
+import http.client
 import logging
+import urllib.parse
 
 import discord
 from discord import app_commands
@@ -52,3 +55,26 @@ class MontyCog(discord.ext.commands.Cog):
             upper = not upper
 
         await interaction.response.send_message(''.join(mocked))
+
+    @app_commands.command()
+    async def ud(self, interaction: discord.Interaction, term: str):
+        """Fetches a definition from urban dictionary."""
+        conn = http.client.HTTPSConnection('api.urbandictionary.com')
+        encoded_term = urllib.parse.quote(term, safe='')
+        conn.request('GET', f'/v0/define?term={encoded_term}')
+        res = conn.getresponse()
+
+        data_bytes = res.read()
+        if len(data_bytes) == 0:
+            await interaction.response.send_message('Failed to get a definition'
+                                                   )
+            return
+        data = json.loads(data_bytes.decode('utf-8'))
+        the_list = data['list']
+        first_result = the_list[0]
+
+        word = first_result['word']
+        permalink = first_result['permalink']
+        definition = first_result['definition'].replace(r'\r\n', '\n')
+        e = discord.Embed(description=f'[{word}]({permalink})\n\n' + definition)
+        await interaction.response.send_message(embed=e)

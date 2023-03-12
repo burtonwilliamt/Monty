@@ -11,4 +11,4 @@ I'm not really sure what to call this bot. Currently I'm using "Computer" as in 
 
 
 ## Added using this link:
-https://discord.com/api/oauth2/authorize?client_id=1084578708259614840&scope=applications.commands
+https://discord.com/api/oauth2/authorize?client_id=1084578708259614840&permissions=2048&scope=applications.commands%20bot

@@ -1,6 +1,10 @@
+import asyncio
+from collections.abc import Sequence
 import json
 import http.client
 import logging
+import random
+from typing import Any
 import urllib.parse
 
 import discord
@@ -8,7 +12,15 @@ from discord import app_commands
 import discord.ext.commands
 import racket
 
+from monty import money_db
+from monty.cogs.text_options import BEG_OPTIONS
+
 _log = logging.getLogger(__name__)
+
+
+def choose_with_distribution(choices: Sequence[Any]) -> Any:
+    weights = [len(choices) - i for i in range(len(choices))]
+    return random.choices(choices, weights=weights)[0]
 
 
 class MontyCog(discord.ext.commands.Cog):
@@ -16,6 +28,7 @@ class MontyCog(discord.ext.commands.Cog):
 
     def __init__(self, bot: racket.RacketBot):
         self.bot = bot
+        self.money = money_db.MoneyDatabase()
 
     @app_commands.command()
     async def celery_man(self, interaction: discord.Interaction):
@@ -24,7 +37,8 @@ class MontyCog(discord.ext.commands.Cog):
             'https://thumbs.gfycat.com/DampHandyGoosefish-small.gif')
 
     @app_commands.command()
-    async def anon(self, interaction: discord.Interaction, message: str):
+    async def anon(self, interaction: discord.Interaction,
+                   message: app_commands.Range[str, 1, 2000]):
         """Send a message anonymously.
         
         Args:
@@ -33,7 +47,7 @@ class MontyCog(discord.ext.commands.Cog):
         await interaction.response.send_message(
             'Ok, I\'ll send that message on your behalf.', ephemeral=True)
 
-        await interaction.channel.send(f'{message}')
+        await interaction.channel.send(f'{message}', allowed_mentions=None)
 
     @racket.context_menu()
     async def mock(self, interaction: discord.Interaction,
@@ -78,3 +92,13 @@ class MontyCog(discord.ext.commands.Cog):
         definition = first_result['definition'].replace(r'\r\n', '\n')
         e = discord.Embed(description=f'[{word}]({permalink})\n\n' + definition)
         await interaction.response.send_message(embed=e)
+
+    @app_commands.command()
+    async def beg(self, interaction: discord.Interaction):
+        """Looking for handouts?"""
+        amount = random.choices([1, 2, 10, 100, 4.2069],
+                                weights=[100, 50, 10, 1, 1])[0]
+        self.money.attempt_transaction(interaction.user, amount, 'begging')
+        await interaction.response.send_message(
+            f'You have been given `{amount}` credits.\n' +
+            choose_with_distribution(BEG_OPTIONS))

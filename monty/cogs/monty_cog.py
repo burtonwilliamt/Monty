@@ -102,3 +102,17 @@ class MontyCog(discord.ext.commands.Cog):
         await interaction.response.send_message(
             f'You have been given `{amount}` credits.\n' +
             choose_with_distribution(BEG_OPTIONS))
+
+    @racket.context_menu()
+    async def random_emoji(self, interaction: discord.Interaction,
+                           message: discord.Message):
+        """React to this message with a random animated emoji."""
+        existing_emojis = [r.emoji for r in message.reactions]
+        await message.add_reaction(
+            random.choice([
+                e for e in interaction.guild.emojis
+                if e.animated and e not in existing_emojis
+            ]))
+        await interaction.response.send_message('Reacted.',
+                                                ephemeral=True,
+                                                delete_after=1.0)

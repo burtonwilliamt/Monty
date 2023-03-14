@@ -65,7 +65,7 @@ class MoneyDatabase:
             guild_id = row[2]
             new_value = pickle.loads(row[3])
 
-            if guild_id not in res:
+            if guild_id not in balances:
                 balances[guild_id] = {}
             if user_id in balances[guild_id]:
                 raise RuntimeError(
@@ -81,6 +81,9 @@ class MoneyDatabase:
     def stale_balance(self, user: discord.Member) -> float:
         """Fetch a user's (maybe) stale balance."""
         return self._balance(user)
+
+    def stale_guild_balances(self, guild_id: int) -> dict[int, float]:
+        return dict(self._balance_cache.get(guild_id, {}))
 
     def _update_cache(self, user_id: int, guild_id: int, balance: float) -> None:
         if guild_id not in self._balance_cache:

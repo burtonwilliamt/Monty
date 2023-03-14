@@ -116,3 +116,19 @@ class MontyCog(discord.ext.commands.Cog):
         await interaction.response.send_message('Reacted.',
                                                 ephemeral=True,
                                                 delete_after=1.0)
+
+    @app_commands.command()
+    async def leaderboard(self, interaction: discord.Interaction):
+        """Find out who the 1% really are."""
+        leaderboard = self.money.stale_guild_balances(interaction.guild.id)
+        pairs = [[await interaction.guild.fetch_member(user_id), value]
+                 for user_id, value in leaderboard.items()]
+        if len(pairs) == 0:
+            await interaction.response.send_message('No leaderboard for this server.')
+            return
+
+        pairs.sort(key=lambda p: p[1])
+        lines = [
+            f'`{i+1}` `{pair[0].display_name}` `{pair[1]}`' for i, pair in enumerate(pairs)
+        ]
+        await interaction.response.send_message('\n'.join(lines))

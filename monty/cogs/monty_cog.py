@@ -107,6 +107,12 @@ class MontyCog(discord.ext.commands.Cog):
     async def random_emoji(self, interaction: discord.Interaction,
                            message: discord.Message):
         """React to this message with a random animated emoji."""
+        if not message.channel.permissions_for(
+                interaction.guild.me).add_reactions:
+            await interaction.response.send_message(
+                'I\'m not able to add reactions here. If you don\'t see me in '
+                'the top right I might need to be added to this channel.')
+            return
         existing_emojis = [r.emoji for r in message.reactions]
         await message.add_reaction(
             random.choice([
@@ -124,11 +130,13 @@ class MontyCog(discord.ext.commands.Cog):
         pairs = [[await interaction.guild.fetch_member(user_id), value]
                  for user_id, value in leaderboard.items()]
         if len(pairs) == 0:
-            await interaction.response.send_message('No leaderboard for this server.')
+            await interaction.response.send_message(
+                'No leaderboard for this server.')
             return
 
         pairs.sort(key=lambda p: p[1])
         lines = [
-            f'`{i+1}` `{pair[0].display_name}` `{pair[1]}`' for i, pair in enumerate(pairs)
+            f'`{i+1}` `{pair[0].display_name}` `{pair[1]}`'
+            for i, pair in enumerate(pairs)
         ]
         await interaction.response.send_message('\n'.join(lines))

@@ -1,4 +1,3 @@
-import asyncio
 from collections.abc import Sequence
 import json
 import http.client
@@ -69,6 +68,19 @@ class MontyCog(discord.ext.commands.Cog):
             upper = not upper
 
         await interaction.response.send_message(''.join(mocked))
+
+    @app_commands.command()
+    async def behold(self, interaction: discord.Interaction, thing_being_looked_at: str):
+        """LOOK wonderingly at an emoji or something."""
+        message = (f'{thing_being_looked_at.strip()}'
+                   '<:bb1:855882629714018334>'
+                   '<:bb2:855882629878120488>'
+                   '\n'
+                   '<:bb3:855882629844172800>'
+                   '<:bb4:855882629731975198>'
+                   '<:bb5:855882629761204284>'
+                   )
+        await interaction.response.send_message(message)
 
     @app_commands.command()
     async def ud(self, interaction: discord.Interaction, term: str):

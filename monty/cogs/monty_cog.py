@@ -173,5 +173,8 @@ class MontyCog(discord.ext.commands.Cog):
         domain = fake_generator.free_email_domain()
         email = f'{random.choice([first, first[0]])}{random.choice(("", "."))}{last}{random.choice((random.randint(0, 100), ""))}@{domain}'
         e.add_field(name='Email', value=email.lower())
+        e.add_field(name='Job', value=fake_generator.job())
+        e.add_field(name='Employeer', value=fake_generator.company())
+        e.add_field(name='License Plate', value=fake_generator.license_plate())
         e.add_field(name='Current Location', value=fake_generator.local_latlng()[0:3])
         await interaction.response.send_message(embed=e)

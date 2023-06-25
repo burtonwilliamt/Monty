@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+import datetime
 import json
 import http.client
 import logging
@@ -10,11 +11,13 @@ import discord
 from discord import app_commands
 import discord.ext.commands
 import racket
+from faker import Faker
 
 from monty import money_db
 from monty.cogs.text_options import BEG_OPTIONS
 
 _log = logging.getLogger(__name__)
+fake_generator = Faker()
 
 
 def choose_with_distribution(choices: Sequence[Any]) -> Any:
@@ -152,3 +155,23 @@ class MontyCog(discord.ext.commands.Cog):
             for i, pair in enumerate(pairs)
         ]
         await interaction.response.send_message('\n'.join(lines))
+
+    @app_commands.command()
+    async def fake_person(self, interaction: discord.Interaction):
+        """Generate a fake persona."""
+        e = discord.Embed()
+        first = fake_generator.first_name()
+        last = fake_generator.last_name()
+        e.add_field(name='Name', value=first + ' ' + last)
+        bday = fake_generator.date_of_birth(minimum_age=18, maximum_age=90)
+        today = datetime.date.today()
+        age = today.year - bday.year - ((today.month, today.day) < (bday.month, bday.day))
+        e.add_field(name='DOB', value=f'{bday}({age})')
+        e.add_field(name='SSN', value=fake_generator.ssn())
+        e.add_field(name='Adddress', value=fake_generator.address())
+        e.add_field(name='Phone Number', value=fake_generator.phone_number())
+        domain = fake_generator.free_email_domain()
+        email = f'{random.choice([first, first[0]])}{random.choice(("", "."))}{last}{random.choice((random.randint(0, 100), ""))}@{domain}'
+        e.add_field(name='Email', value=email.lower())
+        e.add_field(name='Current Location', value=fake_generator.local_latlng()[0:3])
+        await interaction.response.send_message(embed=e)

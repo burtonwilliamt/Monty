@@ -90,7 +90,12 @@ class MontyCog(discord.ext.commands.Cog):
                      interaction: discord.Interaction,
                      length: int = 3,
                      thing_being_looked_at: str = ''):
-        """Long fish. Configurable neck and thingy."""
+        """Long fish. Configurable neck and thingy.
+
+        Args:
+            length: How many neck peices you want. Defaults to 3.
+            thing_being_looked_at: A thing to look at. Defaults to nothing.
+        """
         message = (f'<:fish1:854133518204665876>'
                    f'{"<:fish2:854133921473495040>" * length}'
                    '<:fish3:854133518083162112>'

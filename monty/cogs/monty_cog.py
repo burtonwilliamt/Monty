@@ -87,9 +87,9 @@ class MontyCog(discord.ext.commands.Cog):
 
     @app_commands.command()
     async def fish_look(self,
-                     interaction: discord.Interaction,
-                     length: int = 3,
-                     thing_being_looked_at: str = ''):
+                        interaction: discord.Interaction,
+                        length: int = 3,
+                        thing_being_looked_at: str = ''):
         """Long fish. Configurable neck and thingy.
 
         Args:
@@ -100,6 +100,11 @@ class MontyCog(discord.ext.commands.Cog):
                    f'{"<:fish2:854133921473495040>" * length}'
                    '<:fish3:854133518083162112>'
                    f'{thing_being_looked_at.strip()}')
+        if len(message) > 2000:
+            await interaction.response.send_message(
+                'Woah. Discord can\'t handle message with that much fish. Try a smaller number.',
+                ephemeral=True)
+            return
         await interaction.response.send_message(message)
 
     @app_commands.command()

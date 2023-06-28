@@ -86,7 +86,7 @@ class MontyCog(discord.ext.commands.Cog):
         await interaction.response.send_message(message)
 
     @app_commands.command()
-    async def fishlook(self,
+    async def fish_look(self,
                      interaction: discord.Interaction,
                      length: int = 3,
                      thing_being_looked_at: str = ''):

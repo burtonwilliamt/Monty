@@ -73,7 +73,8 @@ class MontyCog(discord.ext.commands.Cog):
         await interaction.response.send_message(''.join(mocked))
 
     @app_commands.command()
-    async def behold(self, interaction: discord.Interaction, thing_being_looked_at: str):
+    async def behold(self, interaction: discord.Interaction,
+                     thing_being_looked_at: str):
         """LOOK wonderingly at an emoji or something."""
         message = (f'{thing_being_looked_at.strip()}'
                    '<:bb1:855882629714018334>'
@@ -81,8 +82,19 @@ class MontyCog(discord.ext.commands.Cog):
                    '\n'
                    '<:bb3:855882629844172800>'
                    '<:bb4:855882629731975198>'
-                   '<:bb5:855882629761204284>'
-                   )
+                   '<:bb5:855882629761204284>')
+        await interaction.response.send_message(message)
+
+    @app_commands.command()
+    async def fishlook(self,
+                     interaction: discord.Interaction,
+                     length: int = 3,
+                     thing_being_looked_at: str = ''):
+        """Long fish. Configurable neck and thingy."""
+        message = (f'<:fish1:854133518204665876>'
+                   f'{"<:fish2:854133921473495040>" * length}'
+                   '<:fish3:854133518083162112>'
+                   f'{thing_being_looked_at.strip()}')
         await interaction.response.send_message(message)
 
     @app_commands.command()
@@ -165,7 +177,8 @@ class MontyCog(discord.ext.commands.Cog):
         e.add_field(name='Name', value=first + ' ' + last)
         bday = fake_generator.date_of_birth(minimum_age=18, maximum_age=90)
         today = datetime.date.today()
-        age = today.year - bday.year - ((today.month, today.day) < (bday.month, bday.day))
+        age = today.year - bday.year - ((today.month, today.day) <
+                                        (bday.month, bday.day))
         e.add_field(name='DOB', value=f'{bday}({age})')
         e.add_field(name='SSN', value=fake_generator.ssn())
         e.add_field(name='Adddress', value=fake_generator.address())
@@ -176,5 +189,6 @@ class MontyCog(discord.ext.commands.Cog):
         e.add_field(name='Job', value=fake_generator.job())
         e.add_field(name='Employeer', value=fake_generator.company())
         e.add_field(name='License Plate', value=fake_generator.license_plate())
-        e.add_field(name='Current Location', value=fake_generator.local_latlng()[0:3])
+        e.add_field(name='Current Location',
+                    value=fake_generator.local_latlng()[0:3])
         await interaction.response.send_message(embed=e)

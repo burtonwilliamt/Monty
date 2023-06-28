@@ -102,7 +102,7 @@ class MontyCog(discord.ext.commands.Cog):
                    f'{thing_being_looked_at.strip()}')
         if len(message) > 2000:
             await interaction.response.send_message(
-                'Woah. Discord can\'t handle message with that much fish. Try a smaller number.',
+                'Woah. Discord can\'t handle that much fish. Try a smaller number.',
                 ephemeral=True)
             return
         await interaction.response.send_message(message)

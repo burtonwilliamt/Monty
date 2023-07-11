@@ -19,6 +19,7 @@ from monty import money_db
 from monty.cogs.text_options import BEG_OPTIONS
 
 linked_terms_pattern = re.compile(r'\[([^]]*)\]')
+emoji_pattern = re.compile(r'<a?:.*:(\d+)>')
 
 _log = logging.getLogger(__name__)
 fake_generator = Faker()
@@ -275,4 +276,25 @@ class MontyCog(discord.ext.commands.Cog):
         e.add_field(name='License Plate', value=fake_generator.license_plate())
         e.add_field(name='Current Location',
                     value=fake_generator.local_latlng()[0:3])
+        await interaction.response.send_message(embed=e)
+
+    @app_commands.command()
+    async def inspect_emoji(self, interaction: discord.Interaction, emoji: str):
+        """Get details about emoji."""
+        #emoji_id = re.compile()
+        match = emoji_pattern.match(emoji.strip())
+        if match is None:
+            await interaction.response.send_message(
+                f'Unable to extract emoji id from `{emoji}`.')
+            return
+
+        the_emoji = interaction.client.get_emoji(int(match.group(1)))
+        if the_emoji is None:
+            await interaction.response.send_message(
+                f'Unable to find emoji with id `{match.group(1)}`.')
+            return
+
+        e = discord.Embed(description=the_emoji.name)
+        e.add_field(name='created at', value=the_emoji.created_at, inline=False)
+        e.add_field(name='url', value=the_emoji.url, inline=False)
         await interaction.response.send_message(embed=e)

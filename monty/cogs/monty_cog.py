@@ -8,6 +8,7 @@ import random
 import re
 from typing import Any
 import urllib.parse
+import zoneinfo
 
 import discord
 from discord import app_commands
@@ -298,3 +299,46 @@ class MontyCog(discord.ext.commands.Cog):
         e.add_field(name='created at', value=the_emoji.created_at, inline=False)
         e.add_field(name='url', value=the_emoji.url, inline=False)
         await interaction.response.send_message(embed=e)
+
+    @app_commands.command()
+    async def schedule(self,
+                       interaction: discord.Interaction,
+                       event_name: str = None,
+                       hours: int = 0,
+                       minutes: int = 0,
+                       seconds: float = 0.0):
+        """Schedule an event and auto-translate timezones.
+        
+        Args:
+            event_name: The thing you're inviting people to.
+            hours: Hours in the future.
+            minutes: Minutes in the future.
+            seconds: Seconds in the future.
+        """
+        now = datetime.datetime.utcnow().astimezone(datetime.timezone.utc)
+        the_time = now + datetime.timedelta(
+            hours=hours, minutes=minutes, seconds=seconds)
+        time_desc = []
+        if hours != 0:
+            time_desc.append(f'{hours} hours')
+        if minutes != 0:
+            time_desc.append(f'{minutes} minutes')
+        if seconds != 0.0:
+            time_desc.append(f'{seconds} seconds')
+
+        if len(time_desc) >= 2:
+            time_desc.insert(-1, 'and')
+        if len(time_desc) == 0:
+            time_desc.append('right fuckin now')
+
+        def str_for_zone(name: str) -> str:
+            return f'{the_time.astimezone(zoneinfo.ZoneInfo(name)).strftime("%I:%M %p %Z")}'
+
+        await interaction.response.send_message(
+            f'# `{event_name or "get on"}`\n'
+            f'<t:{int(the_time.timestamp()//1.0)}:R>\n'
+            f'`{str_for_zone("US/Pacific")}`\n'
+            f'`{str_for_zone("US/Mountain")}`\n'
+            f'`{str_for_zone("US/Central")}`\n'
+            f'`{str_for_zone("US/Eastern")}`\n'
+        )

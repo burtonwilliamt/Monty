@@ -16,7 +16,7 @@ import discord.ext.commands
 import racket
 from faker import Faker
 
-from monty import money_db
+from monty import money_db, loot
 from monty.cogs.text_options import BEG_OPTIONS
 
 linked_terms_pattern = re.compile(r'\[([^]]*)\]')
@@ -263,8 +263,8 @@ class MontyCog(discord.ext.commands.Cog):
         e.add_field(name='Name', value=first + ' ' + last)
         bday = fake_generator.date_of_birth(minimum_age=18, maximum_age=90)
         today = datetime.date.today()
-        age = today.year - bday.year - ((today.month, today.day) <
-                                        (bday.month, bday.day))
+        age = today.year - bday.year - (
+            (today.month, today.day) < (bday.month, bday.day))
         e.add_field(name='DOB', value=f'{bday}({age})')
         e.add_field(name='SSN', value=fake_generator.ssn())
         e.add_field(name='Adddress', value=fake_generator.address())
@@ -340,5 +340,9 @@ class MontyCog(discord.ext.commands.Cog):
             f'`{str_for_zone("US/Pacific")}`\n'
             f'`{str_for_zone("US/Mountain")}`\n'
             f'`{str_for_zone("US/Central")}`\n'
-            f'`{str_for_zone("US/Eastern")}`\n'
-        )
+            f'`{str_for_zone("US/Eastern")}`\n')
+
+    @app_commands.command()
+    async def loot(self, interaction: discord.Interaction,
+                   box_type: loot.LootBoxType):
+        await loot.create_lootbox_opener(interaction, self.money, box_type)

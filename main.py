@@ -8,5 +8,5 @@ def main():
     racket.run_cog(MontyCog, guilds=GUILD_IDS, token=BOT_TOKEN)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

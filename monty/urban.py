@@ -1,8 +1,8 @@
-from dataclasses import dataclass
-import json
 import http.client
+import json
 import re
 import urllib.parse
+from dataclasses import dataclass
 
 import discord
 
@@ -87,7 +87,6 @@ async def send_urban_dictionary_definition(
 
 
 class UbanDictionaryButton(discord.ui.Button):
-
     def __init__(self, term: str, previous_terms: tuple[str]):
         super().__init__(label=term)
         self.term = term

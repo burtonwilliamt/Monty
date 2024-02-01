@@ -1,18 +1,18 @@
-from collections.abc import Sequence
 import datetime
 import logging
 import random
 import re
-from typing import Any
 import zoneinfo
+from collections.abc import Sequence
+from typing import Any
 
 import discord
-from discord import app_commands
 import discord.ext.commands
 import racket
+from discord import app_commands
 from faker import Faker
 
-from monty import money_db, loot, urban
+from monty import loot, money_db, urban
 from monty.cogs.text_options import BEG_OPTIONS
 
 emoji_pattern = re.compile(r"<a?:.*:(\d+)>")
@@ -277,6 +277,9 @@ class MontyCog(discord.ext.commands.Cog):
             f'`{str_for_zone("US/Eastern")}`\n'
         )
 
+    """
+    Disable for now while it's under development.
     @app_commands.command()
     async def loot(self, interaction: discord.Interaction, box_type: loot.LootBoxType):
         await loot.create_lootbox_opener(interaction, self.money, box_type)
+    """

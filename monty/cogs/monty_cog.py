@@ -2,6 +2,8 @@ import datetime
 import logging
 import random
 import re
+import json
+from typing import Callable
 import zoneinfo
 from collections.abc import Sequence
 from typing import Any
@@ -14,6 +16,7 @@ from faker import Faker
 
 from monty import loot, money_db, urban
 from monty.cogs.text_options import BEG_OPTIONS
+from monty.cogs.managed_channels import GuildChannels, ManagedChannel
 
 emoji_pattern = re.compile(r"<a?:.*:(\d+)>")
 
@@ -25,6 +28,17 @@ def choose_with_distribution(choices: Sequence[Any]) -> Any:
     weights = [len(choices) - i for i in range(len(choices))]
     return random.choices(choices, weights=weights)[0]
 
+
+MANAGED_CHANNELS_SETTINGS = "managed_channels.json"
+
+
+def read_managed_channels(gid: int) -> GuildChannels:
+    return Guilds(**json.load(open(MANAGED_CHANNELS_SETTINGS, "r", encoding="utf-8"))).guilds[gid]
+
+def update_managed_channels(gid: int, f: Callable[[GuildChannels], GuildChannels]):
+    g = Guilds(**json.load(open(MANAGED_CHANNELS_SETTINGS, "r", encoding="utf-8")))
+    g[gid] = f(g[gid])
+    open(MANAGED_CHANNELS_SETTINGS, "w", encoding="utf-8").write(g.json())
 
 class MontyCog(discord.ext.commands.Cog):
     """Collection of miscellaneous commands."""
@@ -276,6 +290,82 @@ class MontyCog(discord.ext.commands.Cog):
             f'`{str_for_zone("US/Central")}`\n'
             f'`{str_for_zone("US/Eastern")}`\n'
         )
+
+
+
+    @app_commands.command()
+    async def channel_create(
+        self, interaction: discord.Interaction, channel_name: str, role_name: str = None
+    ):
+        """Create a new topic-specific channel.
+
+        Args:
+            channel_name: The name of the channel you want to create.
+            role_name: The name of the role that will give access to this channel.
+        """
+        for c in interaction.guild.channels:
+            if c.name.lower() == channel_name.lower():
+                await interaction.response.send_message(
+                    f'The channel name"{channel_name}" already exists. Please choose a name that doesn\'t exist yet.'
+                )
+                return
+
+        if role_name is None:
+            role_name = channel_name
+        for r in interaction.guild.roles:
+            if r.name.lower() == role_name.lower():
+                await interaction.response.send_message(
+                    f'The role name name"{role_name}" already exists. Please choose a name that doesn\'t exist yet.'
+                )
+                return
+
+        g = read_managed_channels(gid = interaction.guild.id)
+        for c in interaction.guild.categories:
+            if c.name == g.category:
+                category = c
+                break
+        else:
+            await interaction.response.send_message(
+                f'This server has configured "{g.category}" as the topics category, but that category can\'t be found right now.'
+            )
+            return
+        role = await interaction.guild.create_role(name=role_name)
+        for r in interaction.guild.roles:
+            if r.name == "@everyone":
+                everyone = r
+                break
+            print(r.name)
+        else:
+            await interaction.response.send_message(
+                "Failed to find the everyone role when seting default permissions."
+            )
+            return
+        cant_read = discord.PermissionOverwrite()
+        cant_read.read_messages = False
+        can_read = discord.PermissionOverwrite()
+        can_read.read_messages = True
+        channel = await interaction.guild.create_text_channel(
+            name=channel_name, overwrites={everyone: cant_read, role: can_read},
+            category=category
+        )
+        def add_channel(g: GuildChannels) -> GuildChannels:
+            g.channels.append(ManagedChannel(name = channel_name, role=role_name))
+            return g
+        update_managed_channels(interaction.guild.id, add_channel)
+        await interaction.response.send_message(f"Succesfully created {str(channel)}")
+
+    @app_commands.command()
+    async def join_channel(
+        self, interaction: discord.Interaction, role: discord.Role
+    ):
+        g = read_managed_channels(interaction.guild.id)
+        available_roles = {c.role for c in g.channels}
+        if role.name not in available_roles:
+            await interaction.response.send_message(
+                "That role is not available for self-assignment."
+            )
+            return
+        await interaction.user.add_roles(role)
 
     """
     Disable for now while it's under development.
